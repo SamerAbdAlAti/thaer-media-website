@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /thaer-media-website/admin/
+Sitemap: https://samerabdalati.github.io/thaer-media-website/sitemap-index.xml

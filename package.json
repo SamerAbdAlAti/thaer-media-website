@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "deploy": "node scripts/deploy-gh-pages.mjs"
   },
   "engines": {
     "node": ">=22.23.4"

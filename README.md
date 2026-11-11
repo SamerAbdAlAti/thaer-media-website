@@ -74,12 +74,34 @@ npm run preview   # يعرض نسخة البناء
 
 </div>
 
-## النشر على GitHub Pages
+## النشر
 
-1. ارفع المشروع على GitHub (فرع `main`).
-2. من إعدادات الريبو: **Settings → Pages → Source: GitHub Actions**.
-3. كل push على `main` يبني الموقع وينشره تلقائياً ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)). الصور التي سبق تحويلها تُحفظ مؤقتاً، فالنشر يحوّل الجديدة فقط.
-4. **لنقل thaerdesigner.com إلى هذه النسخة:** من Settings → Pages أضف الدومين في Custom domain، وحدّث سجلات DNS عند مزوّد الدومين حسب تعليمات GitHub. الروابط العربية مطابقة للموقع الحالي، فلا شيء ينكسر.
+الموقع منشور على: **https://samerabdalati.github.io/thaer-media-website/**
+
+**الوضع الحالي:** حساب GitHub عليه قفل بسبب الفوترة (billing)، وهذا يوقف GitHub Actions. لذلك الموقع يُبنى على الجهاز ويُرفع إلى فرع `gh-pages`، ومنه ينشره GitHub. بعد أي تعديل (من لوحة التحكم أو يدوياً):
+
+<div dir="ltr">
+
+```bash
+git pull           # اسحب آخر التعديلات من GitHub
+npm run deploy     # يبني الموقع وينشره (حوالي دقيقة)
+```
+
+</div>
+
+**بعد حلّ مشكلة الفوترة**، يصبح النشر تلقائياً مع كل تعديل على `main`، بدون `npm run deploy`:
+
+<div dir="ltr">
+
+```bash
+gh workflow enable "Deploy to GitHub Pages" -R SamerAbdAlAti/thaer-media-website
+gh api -X PUT repos/SamerAbdAlAti/thaer-media-website/pages -f build_type=workflow
+gh workflow run "Deploy to GitHub Pages" -R SamerAbdAlAti/thaer-media-website
+```
+
+</div>
+
+**لنقل thaerdesigner.com إلى هذه النسخة:** من Settings → Pages أضف الدومين في Custom domain، وحدّث سجلات DNS عند مزوّد الدومين حسب تعليمات GitHub. الروابط العربية مطابقة للموقع الحالي، فلا شيء ينكسر.
 
 ## مراجع
 

@@ -93,6 +93,15 @@ The user's design: no server and no auth.
 
 ## Deploy
 
+**Current state (2026-11-11):**
+
+- The site is live at https://samerabdalati.github.io/thaer-media-website/.
+- The repo is SamerAbdAlAti/thaer-media-website (public).
+- The account's GitHub **Actions are locked by a billing issue**, so jobs never start. The `Deploy to GitHub Pages` workflow is therefore **disabled**, and Pages is set to **deploy from the `gh-pages` branch** (`build_type=legacy`). GitHub's own branch-based "pages build and deployment" still runs.
+- Publish with `npm run deploy` (`scripts/deploy-gh-pages.mjs`). It builds with `SITE_URL`/`BASE_PATH`/`GITHUB_REPOSITORY` derived from the origin remote, then pushes `dist/` plus `.nojekyll` to `gh-pages` through a temporary worktree. It's a no-op when nothing changed.
+- Once billing is fixed: re-enable the workflow and set `build_type=workflow` (commands in README).
+
+
 - `.github/workflows/deploy.yml` builds on push to `main` and deploys to GitHub Pages. `SITE_URL`/`BASE_PATH` come from `actions/configure-pages`, and the image cache (`node_modules/.astro`) is restored **after** `npm ci`.
 - **Custom domain:** thaerdesigner.com is currently served by the old static site. To switch, point the domain at GitHub Pages: repo Settings → Pages → Custom domain.
 

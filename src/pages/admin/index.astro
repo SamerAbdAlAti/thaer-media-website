@@ -1,0 +1,59 @@
+---
+/* Content dashboard at /admin/. Static like the rest of the site: it can't change anything by itself.
+ * Edits only reach the site when someone with access to the GitHub repo uploads the images and
+ * commits the JSON it produces. Not linked anywhere, and excluded from search engines. */
+import '../../styles/admin.css';
+import { getImage } from 'astro:assets';
+import raw from '../../data/site.json';
+import { listAssets } from '../../lib/site';
+import { href, asset } from '../../lib/i18n';
+
+const assets: Record<string, string> = {};
+for (const a of listAssets()) {
+  assets[a.path] = a.kind === 'svg'
+    ? a.url
+    : (await getImage({ src: a.meta, width: Math.min(320, a.meta.width), format: 'webp', quality: 70 })).src;
+}
+const json = JSON.stringify(raw);
+let hash = 5381;
+for (let i = 0; i < json.length; i++) hash = ((hash << 5) + hash + json.charCodeAt(i)) >>> 0;
+
+// Set automatically inside GitHub Actions; empty in local builds (the dashboard then shows paths instead of links).
+const repo = process.env.GITHUB_REPOSITORY ?? '';
+const branch = process.env.GITHUB_REF_NAME || 'main';
+const payload = JSON.stringify({ site: raw, assets, repo, branch, version: hash.toString(36) }).replace(/</g, '\\u003c');
+---
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>لوحة التحكم — Thaer Media</title>
+  <link rel="icon" type="image/png" href={asset('favicon.png')}>
+</head>
+<body class="admin">
+  <header class="adm-top">
+    <div class="adm-brand">لوحة تحكم المحتوى</div>
+    <span class="adm-status" id="admStatus" role="status"></span>
+    <span class="adm-pending" id="admPending" hidden></span>
+    <div class="adm-actions">
+      <a class="btn ghost small" href={href('ar')} target="_blank" rel="noopener">عرض الموقع ↗</a>
+      <label class="btn ghost small" for="admImport">استيراد ملف</label>
+      <input type="file" id="admImport" accept="application/json,.json" class="sr-only">
+      <button type="button" class="btn ghost small" id="admReset">تجاهل التعديلات</button>
+      <button type="button" class="btn" id="admSaveBtn">حفظ ونشر</button>
+    </div>
+  </header>
+  <div class="adm-banner" id="admBanner" hidden></div>
+  <div class="adm-layout">
+    <nav class="adm-nav" id="admNav" aria-label="أقسام المحتوى"></nav>
+    <main class="adm-main" id="admMain" tabindex="-1"></main>
+  </div>
+  <dialog class="adm-dialog" id="admSave"><div id="admSaveBody"></div></dialog>
+  <script type="application/json" id="admData" set:html={payload}></script>
+  <script>
+    import '../../scripts/admin/main';
+  </script>
+</body>
+</html>

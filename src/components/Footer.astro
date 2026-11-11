@@ -1,0 +1,82 @@
+---
+import { Image } from 'astro:assets';
+import logoDark from '../assets/brand/logo.png';
+import logoLight from '../assets/brand/logo-light.png';
+import { site, whatsappUrl, emailUrl } from '../lib/site';
+import { SOCIAL_ICONS, SOCIAL_LABELS, UI_ICONS } from '../lib/icons';
+import { type Lang, href, tr, ui, formatPhone } from '../lib/i18n';
+
+interface Props { lang: Lang; variant: 'full' | 'simple'; page: string }
+const { lang, variant, page } = Astro.props;
+const f = site.footer;
+const year = new Date().getFullYear();
+const onHome = page === 'home';
+const anchor = (id: string) => (onHome ? `#${id}` : href(lang, '', id));
+const n = site.nav;
+const quickLinks = [
+  { label: n.home, url: anchor('home') }, { label: n.services, url: anchor('services') }, { label: n.work, url: anchor('work') },
+  { label: n.about, url: anchor('about') }, { label: n.process, url: anchor('process') }, { label: n.testimonials, url: anchor('testimonials') },
+  { label: n.contact, url: href(lang, 'contact') },
+];
+const services = site.home.services.map((s) => ({ label: s.title, url: s.target === 'contact' ? href(lang, 'contact') : href(lang, s.target) }));
+const socials = site.socials.map((s) => ({
+  url: s.key === 'whatsapp' ? whatsappUrl() : s.key === 'email' ? emailUrl() : s.url ?? '#',
+  icon: SOCIAL_ICONS[s.key],
+  label: SOCIAL_LABELS[s.key],
+}));
+---
+{variant === 'simple' ? (
+  /* Inner pages: a Home button on the start side and the copyright on the other (same as the live site). */
+  <footer class="site-footer site-footer--simple">
+    <div class="container">
+      <a class="btn btn--primary" href={href(lang)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.home} />
+        <span>{tr(f.homeButton, lang)}</span>
+      </a>
+      <p class="footer-copy">© <time data-year>{year}</time> Thaer Media. <span>{tr(f.copyright, lang)}</span></p>
+    </div>
+  </footer>
+) : (
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href={onHome ? '#home' : href(lang)} aria-label="Thaer Media">
+            <Image class="logo-dark" src={logoDark} alt="Thaer Media" height={44} densities={[1, 2]} />
+            <Image class="logo-light" src={logoLight} alt="Thaer Media" height={44} densities={[1, 2]} />
+          </a>
+          <p>{tr(f.tagline, lang)}</p>
+          <ul class="socials" aria-label={tr(ui.socialsLabel, lang)}>
+            {socials.map((s) => (
+              <li>
+                <a href={s.url} aria-label={s.label} title={s.label} {...(/^https?:/.test(s.url) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                  {s.icon.brand
+                    ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d={s.icon.d} /></svg>
+                    : <svg viewBox="0 0 24 24" class="stroke" aria-hidden="true" set:html={s.icon.inner} />}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <nav aria-labelledby="ftLinks">
+          <h2 class="footer-title" id="ftLinks">{tr(f.quickLinksTitle, lang)}</h2>
+          <div class="footer-links">{quickLinks.map((l) => <a href={l.url}>{tr(l.label, lang)}</a>)}</div>
+        </nav>
+        <nav aria-labelledby="ftServices">
+          <h2 class="footer-title" id="ftServices">{tr(f.servicesTitle, lang)}</h2>
+          <div class="footer-links">{services.map((l) => <a href={l.url}>{tr(l.label, lang)}</a>)}</div>
+        </nav>
+        <div class="footer-contact-col">
+          <h2 class="footer-title">{tr(f.contactTitle, lang)}</h2>
+          <div class="footer-links footer-contact">
+            <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.phone} /><span class="ltr">{formatPhone(site.contact.whatsappNumber)}</span></a>
+            <a href={emailUrl()}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.mail} /><span class="ltr">{site.contact.email}</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <time data-year>{year}</time> Thaer Media. <span>{tr(f.copyright, lang)}</span></p>
+      </div>
+    </div>
+  </footer>
+)}

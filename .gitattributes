@@ -1,0 +1,8 @@
+# Keep LF line endings in the repo (the site builds on Linux in GitHub Actions)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.woff2 binary

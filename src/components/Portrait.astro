@@ -1,0 +1,15 @@
+---
+/* Rounded portrait frame used by the hero, contact and course pages. Holds a dark-theme and a
+ * light-theme photo; CSS cross-fades between them with the theme (as on the live site). */
+import Img from './Img.astro';
+
+interface Props { photo: string; photoLight: string; alt: string; priority?: boolean; sizes?: string }
+const { photo, photoLight, alt, priority = false, sizes = '(max-width: 960px) min(74vw, 340px), 420px' } = Astro.props;
+---
+<div class="portrait">
+  <div class="portrait-inner">
+    <Img class="img-dark" src={photo} alt={alt} widths={[340, 460, 680, 840]} sizes={sizes} priority={priority} />
+    <Img class="img-light" src={photoLight} alt="" widths={[340, 460, 680, 840]} sizes={sizes} loading={priority ? 'eager' : 'lazy'} />
+  </div>
+  <slot />
+</div>

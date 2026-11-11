@@ -1,0 +1,48 @@
+/* ==========================================================================
+   course.css — workshop landing page (socialmedia.courses1/)
+   ========================================================================== */
+.course-hero{padding-block:clamp(28px,4.5vw,56px) clamp(32px,4vw,52px)}
+.course-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center;gap:clamp(32px,5vw,72px)}
+.course-visual{--portrait-w:min(420px,100%)}
+.course-badge{bottom:9%;left:50%;translate:-50% 0}
+.course-copy{display:grid;justify-items:start;gap:20px}
+.course-copy h1{display:grid;gap:6px;font-size:var(--fs-h1)}
+.course-title-top{font-size:.72em;color:var(--text-muted);font-weight:700}
+.course-title-accent{color:var(--gold)}
+:root[data-theme="light"] .course-title-accent{color:var(--accent-text)}
+.course-lead{color:var(--text-muted);font-size:var(--fs-lead);max-width:54ch}
+.course-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%;margin:4px 0 6px}
+.course-fact{padding:18px 20px}
+.course-fact dt{font-size:var(--fs-small);font-weight:600;color:var(--text-subtle)}
+.course-fact dd{margin:4px 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;color:var(--text-muted)}
+.course-fact dd strong{color:var(--text);font-size:1.15rem}
+.course-fact-num{font-size:2rem!important;line-height:1;color:var(--gold)!important}
+:root[data-theme="light"] .course-fact-num{color:var(--accent-text)!important}
+
+.course-register{padding-top:0}
+.register-card{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(28px,5vw,64px);padding:clamp(24px,5vw,56px);border-radius:var(--radius-lg)}
+.register-intro{display:grid;align-content:start;justify-items:start;gap:14px}
+.register-intro h2{font-size:var(--fs-h2)}
+.register-intro p{color:var(--text-muted)}
+.register-points{display:grid;gap:10px;margin-top:6px}
+.register-points li{display:flex;align-items:center;gap:10px;font-weight:600}
+.register-points li::before{
+  content:"";width:20px;height:20px;flex:none;border-radius:50%;
+  background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1606' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5L20 7'/%3E%3C/svg%3E") center/12px no-repeat;
+}
+
+@media (max-width:960px){
+  .course-grid{grid-template-columns:1fr}
+  .course-visual{--portrait-w:min(300px,70vw)}
+  .course-copy{justify-items:stretch}
+  .course-copy .eyebrow{justify-self:start}
+  .course-copy .btn{justify-self:start}
+  .register-card{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .course-facts{grid-template-columns:1fr}
+  .course-copy .btn{justify-self:stretch}
+}
+
+/* Rebuild fix: never let the content force the single column wider than the card */
+@media (max-width:960px){.register-card{grid-template-columns:minmax(0,1fr)}}

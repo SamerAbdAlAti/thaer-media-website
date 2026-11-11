@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/contact.css';
+import SectionHead from '../components/SectionHead.astro';
+import Portrait from '../components/Portrait.astro';
+import { site, whatsappUrl, emailUrl } from '../lib/site';
+import { SOCIAL_ICONS, UI_ICONS } from '../lib/icons';
+import { type Lang, tr, formatPhone } from '../lib/i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = site.contactPage;
+const f = c.form;
+const t = (v: { ar: string; en: string }) => tr(v, lang);
+---
+<BaseLayout lang={lang} route="contact" page="contact" footer="simple" title={t(c.meta.title)} description={t(c.meta.description)}
+  ogTitle={t(c.meta.ogTitle)} ogImage={{ ...c.meta.ogImage, alt: t(c.meta.ogImage.alt) }}>
+  <section class="contact-hero" aria-labelledby="contactTitle">
+    <div class="container contact-grid">
+      <div class="contact-main reveal">
+        <span class="eyebrow">{t(c.eyebrow)}</span>
+        <h1 id="contactTitle"><span class="kicker">{t(c.kicker)}</span> {t(c.title)}</h1>
+        <p class="contact-lead">{t(c.lead)}</p>
+
+        <form class="form card card--glass contact-form" novalidate data-wa-form data-wa={site.contact.whatsappNumber} data-greeting={t(f.greeting)}>
+          <div class="form-row">
+            <label class="field">
+              <span class="field-label">{t(f.name.label)}</span>
+              <input type="text" name="name" data-rule="name" autocomplete="name" required minlength="2" placeholder={t(f.name.placeholder)}>
+            </label>
+            <label class="field">
+              <span class="field-label">{t(f.phone.label)}</span>
+              <input type="tel" name="phone" data-rule="phone" autocomplete="tel" inputmode="tel" required placeholder={t(f.phone.placeholder)}>
+            </label>
+          </div>
+          <label class="field">
+            <span class="field-label">{t(f.details.label)}</span>
+            <textarea name="details" data-rule="details" rows="4" required minlength="5" placeholder={t(f.details.placeholder)}></textarea>
+          </label>
+          <button class="btn btn--primary btn--block" type="submit"><span>{t(f.submit)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></button>
+          <p class="form-status" role="status" aria-live="polite" hidden data-status></p>
+          <p class="form-note">{t(f.note)}</p>
+        </form>
+
+        <div class="contact-methods">
+          <a class="contact-method card" href={whatsappUrl()} target="_blank" rel="noopener noreferrer">
+            <span class="contact-method-icon contact-method-icon--wa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={(SOCIAL_ICONS.whatsapp as { d: string }).d} /></svg></span>
+            <span class="contact-method-text"><strong>{t(c.whatsappLabel)}</strong><span class="ltr">{formatPhone(site.contact.whatsappNumber)}</span></span>
+          </a>
+          <a class="contact-method card" href={emailUrl()}>
+            <span class="contact-method-icon" aria-hidden="true"><svg viewBox="0 0 24 24" class="stroke" set:html={UI_ICONS.mail} /></span>
+            <span class="contact-method-text"><strong>{t(c.emailLabel)}</strong><span class="ltr">{site.contact.email}</span></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="contact-visual reveal">
+        <Portrait photo={site.home.hero.photo} photoLight={site.home.hero.photoLight} alt={t(site.home.hero.photoAlt)} sizes="(max-width: 960px) min(70vw, 300px), 420px">
+          <span class="eyebrow eyebrow--on-media portrait-badge contact-badge">{t(c.photoBadge)}</span>
+        </Portrait>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="stepsTitle">
+    <div class="container">
+      <SectionHead lang={lang} id="stepsTitle" {...c.stepsHead} />
+      <ol class="steps reveal-stagger">
+        {c.steps.map((s, i) => (
+          <li class="step card"><span class="step-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span><h3>{t(s.title)}</h3><p>{t(s.desc)}</p></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/forms';
+  </script>
+</BaseLayout>

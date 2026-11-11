@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/course.css';
+import Portrait from '../components/Portrait.astro';
+import { site } from '../lib/site';
+import { UI_ICONS } from '../lib/icons';
+import { type Lang, tr } from '../lib/i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = site.course;
+const f = c.form;
+const t = (v: { ar: string; en: string }) => tr(v, lang);
+---
+<BaseLayout lang={lang} route="course" page="course" footer="simple" title={t(c.meta.title)} description={t(c.meta.description)}
+  ogTitle={t(c.meta.ogTitle)} ogImage={{ ...c.meta.ogImage, alt: t(c.meta.ogImage.alt) }}>
+  <section class="course-hero" aria-labelledby="courseTitle">
+    <div class="container course-grid">
+      <div class="course-visual reveal">
+        <Portrait photo={c.photo} photoLight={c.photoLight} alt={t(c.photoAlt)} priority sizes="(max-width: 960px) min(70vw, 300px), 420px">
+          <span class="eyebrow eyebrow--on-media portrait-badge course-badge">{t(c.photoBadge)}</span>
+        </Portrait>
+      </div>
+      <div class="course-copy reveal">
+        <span class="eyebrow">{t(c.eyebrow)}</span>
+        <h1 id="courseTitle">
+          <span class="course-title-top">{t(c.titleTop)}</span>
+          <span class="course-title-accent">{t(c.titleAccent)}</span>
+        </h1>
+        <p class="course-lead">{t(c.lead)}</p>
+        <dl class="course-facts">
+          <div class="course-fact card">
+            <dt>{t(c.durationLabel)}</dt>
+            <dd><strong class="course-fact-num">{c.durationValue}</strong> <span>{t(c.durationUnit)}</span></dd>
+          </div>
+          <div class="course-fact card">
+            <dt>{t(c.trainerLabel)}</dt>
+            <dd><strong>{t(c.trainerName)}</strong> <span>{t(c.trainerRole)}</span></dd>
+          </div>
+        </dl>
+        <a class="btn btn--primary" href="#register"><span>{t(c.cta)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section course-register" id="register" aria-labelledby="registerTitle">
+    <div class="container">
+      <div class="register-card card card--glass reveal">
+        <div class="register-intro">
+          <span class="eyebrow">{t(c.register.eyebrow)}</span>
+          <h2 id="registerTitle">{t(c.register.title)}</h2>
+          <p>{t(c.register.paragraph)}</p>
+          <ul class="register-points">{c.register.points.map((p) => <li>{t(p)}</li>)}</ul>
+        </div>
+        <form class="form" novalidate data-wa-form data-wa={site.contact.whatsappNumber} data-greeting={t(f.greeting)}>
+          <label class="field">
+            <span class="field-label">{t(f.fullName.label)}</span>
+            <input name="fullName" data-rule="fullName" type="text" autocomplete="name" required placeholder={t(f.fullName.placeholder)}>
+          </label>
+          <label class="field">
+            <span class="field-label">{t(f.whatsapp.label)}</span>
+            <input name="whatsapp" data-rule="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder={t(f.whatsapp.placeholder)}>
+          </label>
+          <label class="field">
+            <span class="field-label">{t(f.email.label)}</span>
+            <input name="email" data-rule="email" type="email" autocomplete="email" required placeholder={t(f.email.placeholder)}>
+          </label>
+          <button class="btn btn--primary btn--block" type="submit"><span>{t(f.submit)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></button>
+          <p class="form-status" role="status" aria-live="polite" hidden data-status></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/forms';
+  </script>
+</BaseLayout>

@@ -1,0 +1,26 @@
+---
+// GitHub Pages serves this for any missing URL (same content as the live site's 404).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/contact.css';
+import { site } from '../lib/site';
+import { UI_ICONS } from '../lib/icons';
+import { href } from '../lib/i18n';
+const nf = site.notFound;
+---
+<BaseLayout lang="ar" route="404" page="notfound" noindex title="الصفحة غير موجودة — Thaer Media" description="الصفحة التي تبحث عنها غير موجودة."
+  ogImage={{ ...site.home.meta.ogImage, alt: 'Thaer Media' }}>
+  <section class="section notfound">
+    <div class="container">
+      <div class="cta">
+        <span class="notfound-code" aria-hidden="true">404</span>
+        <h1>{nf.title.ar}</h1>
+        <p>{nf.text.ar}</p>
+        <div class="cta-actions">
+          <a class="btn btn--primary" href={href('ar')}><span>{nf.homeButton.ar}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></a>
+          <a class="btn btn--ghost" href={href('ar', '', 'work')}>{nf.workButton.ar}</a>
+        </div>
+        <p lang="en" dir="ltr" style="font-size:.95rem;opacity:.75">{nf.title.en} · <a href={href('en')} style="text-decoration:underline">{nf.homeButton.en}</a></p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

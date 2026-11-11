@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/gallery.css';
+import { getImage } from 'astro:assets';
+import Img from '../components/Img.astro';
+import { site, rasterImage } from '../lib/site';
+import { UI_ICONS } from '../lib/icons';
+import { type Lang, type GalleryKey, GALLERIES, href, tr, ui, galleryCount } from '../lib/i18n';
+
+interface Props { lang: Lang; gallery: GalleryKey }
+const { lang, gallery } = Astro.props;
+const g = site.galleries[gallery];
+const common = site.galleries.common;
+const t = (v: { ar: string; en: string }) => tr(v, lang);
+
+// Lightbox images: one large WebP per item, generated at build time. Print artwork keeps more
+// pixels because signage text has to stay readable when zoomed.
+const maxFull = gallery === 'print' ? 2000 : 1600;
+const items = await Promise.all(g.items.map(async (item, i) => {
+  const full = rasterImage(item.image);
+  const thumbPath = 'cover' in item ? (item as { cover: string }).cover : item.image;
+  const thumb = rasterImage(thumbPath);
+  return {
+    i, thumbPath, alt: t(item.alt),
+    // Social designs mix 4:5 and 1:1 artwork: each frame takes its image's own ratio (known at build
+    // time, so no layout shift and no JS — the live site measured it in the browser after loading).
+    ratio: gallery === 'social' ? `${thumb.width} / ${thumb.height}` : undefined,
+    full: (await getImage({ src: full, width: Math.min(maxFull, full.width), format: 'webp', quality: 82 })).src,
+  };
+}));
+---
+<BaseLayout lang={lang} route={gallery} page="gallery" footer="simple" title={`${t(g.title)} — Thaer Media`} description={t(g.meta.description)}
+  ogTitle={t(g.meta.ogTitle)} ogDescription={t(g.intro)} ogImage={{ ...g.meta.ogImage, alt: t(g.meta.ogImage.alt) }}>
+  <section class="page-hero">
+    <div class="container">
+      <nav class="breadcrumb" aria-label={t(ui.breadcrumb)}>
+        <a href={href(lang)}>{t(site.nav.home)}</a><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.crumb} />
+        <a href={href(lang, '', 'work')}>{t(common.breadcrumbWork)}</a><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.crumb} />
+        <span aria-current="page">{t(g.title)}</span>
+      </nav>
+      <div class="gallery-head">
+        <div>
+          <h1 id="galleryTitle">{t(g.title)}</h1>
+          <p>{t(g.intro)}</p>
+        </div>
+        <p class="gallery-count">{galleryCount(items.length, lang)}</p>
+      </div>
+      <nav class="gallery-tabs" aria-label={t(common.tabsLabel)}>
+        {GALLERIES.map((key) => <a href={href(lang, key)} aria-current={key === gallery ? 'page' : undefined}>{t(site.galleries[key].title)}</a>)}
+      </nav>
+    </div>
+  </section>
+
+  <section class="gallery-section" aria-labelledby="galleryTitle">
+    <div class="container">
+      <ul class={`gallery-grid gallery-grid--${gallery}`}>
+        {items.map((it) => (
+          <li class="gallery-item">
+            <button type="button" class="gallery-open" data-index={it.i} data-full={it.full} data-alt={it.alt} aria-label={`${t(ui.view)}: ${it.alt}`}>
+              <span class="gallery-frame" style={it.ratio ? `aspect-ratio:${it.ratio}` : undefined}>
+                <Img src={it.thumbPath} alt={it.alt} widths={[420, 640, 900]} sizes="(max-width: 640px) calc(100vw - 48px), 580px" loading={it.i < 4 ? 'eager' : 'lazy'} />
+              </span>
+              <span class="gallery-zoom" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={UI_ICONS.zoom} /></span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <dialog class:list={['lightbox', { 'is-single': items.length < 2 }]} id="lightbox" aria-label={t(ui.imageViewer)}>
+    <div class="lightbox-bar">
+      <p class="lightbox-counter" aria-live="polite" data-counter></p>
+      <button class="lightbox-btn" type="button" data-close aria-label={t(ui.close)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.menuClose} /></button>
+    </div>
+    <figure class="lightbox-stage">
+      <img alt="" data-img>
+    </figure>
+    <button class="lightbox-btn lightbox-nav" type="button" data-dir="prev" aria-label={t(ui.prevImage)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.chevronPrev} /></button>
+    <button class="lightbox-btn lightbox-nav" type="button" data-dir="next" aria-label={t(ui.nextImage)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.chevronNext} /></button>
+  </dialog>
+
+  <script>
+    import '../scripts/gallery';
+  </script>
+</BaseLayout>

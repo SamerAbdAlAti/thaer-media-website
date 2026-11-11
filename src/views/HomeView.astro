@@ -1,0 +1,208 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/home.css';
+import SectionHead from '../components/SectionHead.astro';
+import Portrait from '../components/Portrait.astro';
+import Img from '../components/Img.astro';
+import { site, whatsappUrl } from '../lib/site';
+import { SERVICE_ICON_PATHS, UI_ICONS } from '../lib/icons';
+import { type Lang, href, tr, ui, fill, asset } from '../lib/i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const h = site.home;
+const t = (v: { ar: string; en: string }) => tr(v, lang);
+const slideLabel = (n: number, total: number) => fill(t(ui.slideOf), { n, total });
+const courseUrl = href(lang, 'course');
+
+// Structured data for search engines (same fields as the live site).
+const sameAs = site.socials.filter((s) => s.url && /^https?:/.test(s.url) && s.key !== 'snapchat').map((s) => s.url);
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'ProfessionalService', name: 'Thaer Media', alternateName: 'ثائر القريناوي',
+  url: Astro.site ? new URL(href(lang), Astro.site).href : undefined,
+  image: Astro.site ? new URL(asset(h.meta.ogImage.src), Astro.site).href : undefined,
+  logo: Astro.site ? new URL(asset('icon-512.png'), Astro.site).href : undefined,
+  email: site.contact.email, telephone: `+${site.contact.whatsappNumber}`,
+  description: t(h.meta.description), sameAs,
+});
+---
+<BaseLayout lang={lang} route="home" page="home" title={t(h.meta.title)} description={t(h.meta.description)}
+  ogTitle={t(h.meta.ogTitle)} ogDescription={t(h.meta.ogDescription)} ogImage={{ ...h.meta.ogImage, alt: t(h.meta.ogImage.alt) }}>
+  <script slot="head" type="application/ld+json" set:html={jsonLd} />
+
+  <!-- Hero -->
+  <section class="hero" id="home" aria-labelledby="heroTitle">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">{t(h.hero.eyebrow)}</span>
+        <h1 id="heroTitle"><span class="hero-line">{t(h.hero.line1)}</span> <span class="hero-line hero-accent">{t(h.hero.line2)}</span></h1>
+        <p class="hero-lead">{t(h.hero.lead)}</p>
+        <div class="hero-actions">
+          <a class="btn btn--primary" href={href(lang, 'contact')}><span>{t(h.hero.primaryButton)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></a>
+          <a class="btn btn--ghost" href="#work">{t(h.hero.secondaryButton)}</a>
+        </div>
+        <dl class="metrics">
+          {h.metrics.map((m) => (
+            <div class="metric">
+              <dt>{t(m.label)}</dt>
+              <dd><span class="metric-value" data-count={m.value}>{m.value}</span><span aria-hidden="true">+</span></dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div class="hero-visual">
+        <Portrait photo={h.hero.photo} photoLight={h.hero.photoLight} alt={t(h.hero.photoAlt)} priority>
+          <span class="eyebrow eyebrow--on-media portrait-badge badge-top">{t(h.hero.badgeTop)}</span>
+          <span class="eyebrow eyebrow--on-media portrait-badge badge-bottom">{t(h.hero.badgeBottom)}</span>
+        </Portrait>
+      </div>
+    </div>
+  </section>
+
+  <!-- Course promo slider -->
+  {h.promo.slides.length > 0 && (
+    <section class="promo" aria-label={t(h.promo.label)}>
+      <div class="container">
+        <div class:list={['slider', 'promo-slider', 'reveal', { 'is-single': h.promo.slides.length < 2 }]} data-slider data-autoplay="5000" aria-roledescription="carousel">
+          <div class="slider-viewport">
+            <div class="slider-track">
+              {h.promo.slides.map((s, i) => (
+                <div class="slide" role="group" aria-roledescription="slide" aria-label={slideLabel(i + 1, h.promo.slides.length)}>
+                  <a class="promo-slide" href={courseUrl}>
+                    <Img src={s.image[lang]} alt={t(s.alt)} widths={[720, 1080, 1440]} sizes="(max-width: 1248px) calc(100vw - 48px), 1200px" loading={i === 0 ? 'eager' : 'lazy'} />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div class="slider-controls">
+            <button class="slider-arrow" type="button" data-dir="prev" aria-label={t(ui.prevSlide)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.chevronPrev} /></button>
+            <div class="slider-dots" role="group" aria-label={t(ui.chooseSlide)}>
+              {h.promo.slides.map((_, i) => <button type="button" class="slider-dot" aria-label={slideLabel(i + 1, h.promo.slides.length)} aria-current={i === 0 ? 'true' : 'false'}></button>)}
+            </div>
+            <a class="btn btn--primary btn--sm promo-cta" href={courseUrl}><span>{t(h.promo.cta)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></a>
+            <button class="slider-arrow" type="button" data-dir="next" aria-label={t(ui.nextSlide)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.chevronNext} /></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Services -->
+  <section class="section" id="services" aria-labelledby="servicesTitle">
+    <div class="container">
+      <SectionHead lang={lang} id="servicesTitle" {...h.servicesHead} />
+      <div class="services-grid reveal-stagger">
+        {h.services.map((s) => {
+          const toContact = s.target === 'contact';
+          return (
+            <a class="service-card card" data-glow href={toContact ? href(lang, 'contact') : href(lang, s.target)} data-work={toContact ? undefined : s.target}>
+              <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={SERVICE_ICON_PATHS[s.icon]} /></span>
+              <h3>{t(s.title)}</h3>
+              <p>{t(s.desc)}</p>
+              <span class="card-link"><span>{t(toContact ? h.serviceLinks.request : h.serviceLinks.work)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- Work -->
+  <section class="section" id="work" aria-labelledby="workTitle">
+    <div class="container">
+      <SectionHead lang={lang} id="workTitle" {...h.workHead} />
+      <div class="work-grid reveal-stagger">
+        {h.workTeaser.map((w) => (
+          <a class="work-card" href={href(lang, w.gallery)} data-work={w.gallery}>
+            <Img src={w.cover[lang]} alt="" widths={[480, 720, 1000]} sizes="(max-width: 700px) calc(100vw - 48px), 590px" />
+            <span class="work-card-body">
+              <h3>{t(w.title)}</h3>
+              <span class="work-card-arrow" aria-hidden="true"><svg class="icon-arrow" viewBox="0 0 24 24" set:html={UI_ICONS.arrow} /></span>
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section" id="about" aria-labelledby="aboutTitle">
+    <div class="container">
+      <SectionHead lang={lang} id="aboutTitle" {...h.aboutHead} />
+      <div class="about-grid">
+        <figure class="about-media reveal">
+          <Img src={h.about.image} alt={t(h.about.imageAlt)} widths={[480, 746]} sizes="(max-width: 960px) calc(100vw - 48px), 570px" />
+          <figcaption class="eyebrow eyebrow--on-media about-badge"><span>{t(h.about.badge)}</span></figcaption>
+        </figure>
+        <div class="about-copy reveal">
+          <p class="about-lead">{t(h.about.lead)}</p>
+          <p>{t(h.about.paragraph)}</p>
+          <ul class="about-points">{h.about.points.map((p) => <li>{t(p)}</li>)}</ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section class="section" id="process" aria-labelledby="processTitle">
+    <div class="container">
+      <SectionHead lang={lang} id="processTitle" {...h.processHead} />
+      <ol class="process-grid reveal-stagger">
+        {h.process.map((p, i) => (
+          <li class="process-step card">
+            <span class="process-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{t(p.title)}</h3>
+            <p>{t(p.desc)}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials" aria-labelledby="testimonialsTitle">
+    <div class="container">
+      <SectionHead lang={lang} id="testimonialsTitle" center {...h.testimonialsHead} />
+      <div class:list={['slider', 'testimonial-slider', 'card', 'card--glass', 'reveal', { 'is-single': h.testimonials.length < 2 }]} data-slider data-autoplay="6000" aria-roledescription="carousel">
+        <svg class="quote-mark" viewBox="0 0 48 48" aria-hidden="true" set:html={UI_ICONS.quote} />
+        <div class="slider-viewport">
+          <div class="slider-track">
+            {h.testimonials.map((q, i) => (
+              <figure class="slide testimonial" role="group" aria-roledescription="slide" aria-label={slideLabel(i + 1, h.testimonials.length)}>
+                <div class="stars" role="img" aria-label={t(ui.rated)}>★★★★★</div>
+                <blockquote>{t(q.quote)}</blockquote>
+                <figcaption>{t(q.author)}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+        <div class="slider-controls">
+          <button class="slider-arrow" type="button" data-dir="prev" aria-label={t(ui.prevReview)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.chevronPrev} /></button>
+          <div class="slider-dots" role="group" aria-label={t(ui.chooseReview)}>
+            {h.testimonials.map((_, i) => <button type="button" class="slider-dot" aria-label={slideLabel(i + 1, h.testimonials.length)} aria-current={i === 0 ? 'true' : 'false'}></button>)}
+          </div>
+          <button class="slider-arrow" type="button" data-dir="next" aria-label={t(ui.nextReview)}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.chevronNext} /></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" id="contact" aria-labelledby="ctaTitle">
+    <div class="container">
+      <div class="cta reveal" data-glow>
+        <span class="eyebrow">{t(h.cta.eyebrow)}</span>
+        <h2 id="ctaTitle">{t(h.cta.title)}</h2>
+        <p>{t(h.cta.paragraph)}</p>
+        <div class="cta-actions">
+          <a class="btn btn--primary" href={href(lang, 'contact')}><span>{t(h.cta.button)}</span><svg class="icon-arrow" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.arrow} /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/home';
+  </script>
+</BaseLayout>

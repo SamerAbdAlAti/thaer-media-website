@@ -1,0 +1,11 @@
+---
+import type { T, Lang } from '../lib/i18n';
+import { tr } from '../lib/i18n';
+
+interface Props { lang: Lang; kicker: T; title: T; paragraph?: T; id: string; center?: boolean }
+const { lang, kicker, title, paragraph, id, center = false } = Astro.props;
+---
+<div class:list={['section-head', 'reveal', { 'section-head--center': center }]}>
+  <h2 id={id}><span class="kicker">{tr(kicker, lang)}</span> {tr(title, lang)}</h2>
+  {paragraph && <p>{tr(paragraph, lang)}</p>}
+</div>

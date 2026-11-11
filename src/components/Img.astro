@@ -1,0 +1,73 @@
+---
+/**
+ * The one way images are rendered on this site.
+ * - Photos (jpg/png/webp) → <picture> with AVIF + WebP at several widths, generated at build time.
+ *   The original can be any size (a 6000px camera photo is fine): visitors only download the
+ *   width their screen needs, and width/height are always set so the layout never jumps.
+ * - Each format gets its own quality: AVIF q50 looks like WebP q75 but is ~30% smaller
+ *   (measured on this site's photos), which <Picture> can't do because it shares one quality.
+ * - SVGs are vector and are served as-is.
+ */
+import { getImage } from 'astro:assets';
+import { resolveImage } from '../lib/site';
+
+interface Props {
+  src: string;              // path relative to src/assets/, as written in site.json
+  alt: string;
+  widths?: number[];        // output widths for photos; widths above the original are dropped
+  sizes?: string;           // rendered width on screen, so the browser picks the right file
+  width?: number;           // fixed-size images (icons): rendered at 1x and 2x of this
+  height?: number;
+  loading?: 'lazy' | 'eager';
+  priority?: boolean;       // the main above-the-fold image (LCP): eager + high fetch priority
+  class?: string;
+}
+const { src, alt, widths, sizes, width, height, loading, priority = false, class: cls } = Astro.props;
+const img = resolveImage(src);
+const load = priority ? 'eager' : (loading ?? 'lazy');
+
+let sources: { type: string; srcset: string }[] = [];
+let fallback = { src: '', srcset: '', width: 0, height: 0 };
+
+if (img.kind === 'raster') {
+  const meta = img.meta;
+  const isIcon = width !== undefined;
+  const sizing = isIcon
+    ? { width, height: height ?? Math.round((width! * meta.height) / meta.width), densities: [1, 2] }
+    : {
+        widths: [...new Set((widths ?? [640, 960, 1280]).filter((w) => w < meta.width).concat(Math.min(meta.width, Math.max(...(widths ?? [1280])))))].sort((a, b) => a - b),
+      };
+  // The JPEG/PNG fallback is only for browsers without AVIF/WebP (practically none), so it's a
+  // single mid-size file rather than a full srcset — fewer files to encode on every build.
+  const fallbackWidth = isIcon ? undefined : sizing.widths![Math.floor((sizing.widths!.length - 1) / 2)];
+  const [avif, webp, base] = await Promise.all([
+    getImage({ src: meta, ...sizing, format: 'avif', quality: 50 }),
+    getImage({ src: meta, ...sizing, format: 'webp', quality: 75 }),
+    isIcon
+      ? getImage({ src: meta, ...sizing, format: meta.format === 'png' ? 'png' : 'jpg', quality: 78 })
+      : getImage({ src: meta, width: fallbackWidth, format: 'jpg', quality: 78 }),
+  ]);
+  sources = [
+    { type: 'image/avif', srcset: avif.srcSet.attribute },
+    { type: 'image/webp', srcset: webp.srcSet.attribute },
+  ];
+  fallback = {
+    src: base.src,
+    srcset: isIcon ? base.srcSet.attribute : '',
+    width: isIcon ? sizing.width! : meta.width,
+    height: isIcon ? sizing.height! : meta.height,
+  };
+}
+---
+{img.kind === 'svg' ? (
+  <img src={img.url} alt={alt} class={cls} width={width} height={height} loading={load} decoding="async" />
+) : (
+  <picture>
+    {sources.map((s) => <source type={s.type} srcset={s.srcset} sizes={sizes} />)}
+    <img
+      src={fallback.src} srcset={fallback.srcset || undefined} sizes={sizes} alt={alt} class={cls}
+      width={fallback.width} height={fallback.height} loading={load} decoding={priority ? 'sync' : 'async'}
+      fetchpriority={priority ? 'high' : undefined}
+    />
+  </picture>
+)}

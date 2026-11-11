@@ -1,0 +1,19 @@
+# build output and caches
+dist/
+.astro/
+node_modules/
+
+# local env
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# The UI/UX snapshot of the old site is large (~365 MB of screenshots/video).
+# Its README, measurements and source-assets are small and kept; remove these two lines to commit everything.
+ui-ux-reference/screenshots/
+ui-ux-reference/video/

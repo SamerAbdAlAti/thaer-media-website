@@ -1,0 +1,50 @@
+---
+import { Image } from 'astro:assets';
+import logoDark from '../assets/brand/logo.png';
+import logoLight from '../assets/brand/logo-light.png';
+import { site } from '../lib/site';
+import { UI_ICONS } from '../lib/icons';
+import { type Lang, type RouteKey, href, other, tr, ui } from '../lib/i18n';
+
+interface Props { lang: Lang; route: RouteKey | '404'; page: string }
+const { lang, route, page } = Astro.props;
+const onHome = page === 'home';
+const n = site.nav;
+// On the homepage the section links are same-page anchors (they also drive the scrollspy).
+const anchor = (id: string) => (onHome ? `#${id}` : href(lang, '', id));
+const links = [
+  { label: n.home, url: anchor('home') },
+  { label: n.services, url: anchor('services') },
+  { label: n.work, url: anchor('work') },
+  { label: n.about, url: anchor('about') },
+  { label: n.process, url: anchor('process') },
+  { label: n.testimonials, url: anchor('testimonials') },
+  { label: n.contact, url: href(lang, 'contact'), current: page === 'contact' },
+];
+const altLang = other(lang);
+const altUrl = href(altLang, route === '404' ? '' : route);
+---
+<header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label={tr(ui.mainNav, lang)}>
+      <a class="brand" href={onHome ? '#home' : href(lang)} aria-label={tr(ui.homeLabel, lang)}>
+        <Image class="logo-dark" src={logoDark} alt="Thaer Media" height={38} densities={[1, 2]} loading="eager" />
+        <Image class="logo-light" src={logoLight} alt="Thaer Media" height={38} densities={[1, 2]} />
+      </a>
+      <div class="nav-links" id="navLinks">
+        {links.map((l) => <a href={l.url} aria-current={l.current ? 'page' : undefined}>{tr(l.label, lang)}</a>)}
+      </div>
+      <div class="nav-actions">
+        <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label={tr(ui.theme, lang)}>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.sun} />
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.moon} />
+        </button>
+        <a class="icon-btn lang-toggle" id="langToggle" href={altUrl} hreflang={altLang} lang={altLang} data-lang={altLang} aria-label={tr(ui.switchLang, lang)}>{lang === 'ar' ? 'EN' : 'ع'}</a>
+        <button class="icon-btn menu-toggle" id="menuToggle" type="button" aria-controls="navLinks" aria-expanded="false" aria-label={tr(ui.menu, lang)}>
+          <svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.menuOpen} />
+          <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true" set:html={UI_ICONS.menuClose} />
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
